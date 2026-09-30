@@ -1,5 +1,7 @@
 # Caldova Careers
 
+template: https://github.com/github-samples/caldova-careers 
+
 The careers site for **Caldova**, an AI-native pharmaceutical company. Browse open roles and submit an application with your name and email — no account required.
 
 This is the sample application for the **GitHub Copilot CLI** workshop. It's a deliberately small, realistic app: job postings are Markdown content, and the only database-backed feature is the apply flow.
