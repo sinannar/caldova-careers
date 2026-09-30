@@ -1,6 +1,7 @@
 # Caldova Careers
 
 template: https://github.com/github-samples/caldova-careers 
+slides: https://danielscottraynsford.com/plagueho.learn/hypervelocity-engineering/#/1
 
 The careers site for **Caldova**, an AI-native pharmaceutical company. Browse open roles and submit an application with your name and email — no account required.
 
