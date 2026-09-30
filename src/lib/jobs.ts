@@ -14,6 +14,17 @@ export function sortByNewest(jobs: Job[]): Job[] {
     );
 }
 
+/** Return jobs whose titles contain the query, ignoring case and surrounding whitespace. */
+export function filterJobsByTitle(jobs: Job[], query: string): Job[] {
+    const normalizedQuery = query.trim().toLowerCase();
+
+    if (normalizedQuery === '') {
+        return jobs;
+    }
+
+    return jobs.filter((job) => job.title.toLowerCase().includes(normalizedQuery));
+}
+
 /**
  * Format an ISO-8601 date as a human-readable posted date,
  * e.g. "January 5, 2027". Falls back to the raw value if unparseable.
