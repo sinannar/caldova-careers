@@ -12,6 +12,12 @@ const entries = await getCollection('jobs');
 const jobs: Job[] = sortByNewest(
     entries.map((entry) => ({ slug: entry.id, ...entry.data })),
 );
+const serializedJobs = JSON.stringify(jobs)
+  .replace(/</g, '\\u003C')
+  .replace(/>/g, '\\u003E')
+  .replace(/&/g, '\\u0026')
+  .replace(/\u2028/g, '\\u2028')
+  .replace(/\u2029/g, '\\u2029');
 ---
 
 <Layout title="Caldova Careers — Open roles">
@@ -29,12 +35,66 @@ const jobs: Job[] = sortByNewest(
     {jobs.length === 0 ? (
       <EmptyState text="There are no open roles right now. Check back soon." />
     ) : (
-      <div
-        class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
-        data-testid="roles-grid"
-      >
-        {jobs.map((job) => <RoleCard job={job} />)}
-      </div>
+      <>
+        <div class="mb-6">
+          <label for="role-search" class="block text-sm font-medium text-slate-200 mb-2">
+            Search roles by title
+          </label>
+          <input
+            id="role-search"
+            type="search"
+            placeholder="Search open roles"
+            class="w-full max-w-xl rounded-lg border border-slate-600 bg-slate-800 px-4 py-3 text-slate-100 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/40"
+            data-testid="role-search"
+            aria-controls="roles-grid"
+          />
+        </div>
+
+        <p
+          class="mb-6 text-slate-300"
+          data-testid="role-search-status"
+          role="status"
+          aria-live="polite"
+          hidden
+        >
+          No roles match your search.
+        </p>
+
+        <script id="role-search-data" type="application/json" is:inline set:html={serializedJobs}></script>
+
+        <div
+          class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
+          id="roles-grid"
+          data-testid="roles-grid"
+        >
+          {jobs.map((job) => <RoleCard job={job} />)}
+        </div>
+      </>
     )}
   </div>
 </Layout>
+
+<script>
+  import { filterJobsByTitle } from '../lib/jobs';
+  import type { Job } from '../types/job';
+
+  const searchInput = document.querySelector<HTMLInputElement>('[data-testid="role-search"]');
+  const status = document.querySelector<HTMLElement>('[data-testid="role-search-status"]');
+  const dataElement = document.querySelector<HTMLScriptElement>('#role-search-data');
+
+  if (searchInput && status && dataElement) {
+    const jobs = JSON.parse(dataElement.textContent ?? '[]') as Job[];
+    const cards = Array.from(document.querySelectorAll<HTMLElement>('[data-testid="role-card"][data-job-id]'));
+
+    searchInput.addEventListener('input', () => {
+      const matchingJobs = filterJobsByTitle(jobs, searchInput.value);
+      const matchingIds = new Set(matchingJobs.map((job) => job.slug));
+
+      cards.forEach((card) => {
+        card.hidden = !matchingIds.has(card.dataset.jobId ?? '');
+      });
+
+      status.hidden = searchInput.value.trim() === '' || matchingJobs.length > 0;
+    });
+  }
+</script>

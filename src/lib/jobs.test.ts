@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { sortByNewest, formatPostedDate } from './jobs';
+import { filterJobsByTitle, sortByNewest, formatPostedDate } from './jobs';
 import type { Job } from '../types/job';
 
 function makeJob(slug: string, postedDate: string): Job {
@@ -30,6 +30,52 @@ describe('sortByNewest', () => {
         const original = jobs.map((j) => j.slug);
         sortByNewest(jobs);
         expect(jobs.map((j) => j.slug)).toEqual(original);
+    });
+});
+
+describe('filterJobsByTitle', () => {
+    it('matches partial titles without changing their order', () => {
+        const jobs = [
+            { ...makeJob('first', '2027-01-01'), title: 'Senior Frontend Engineer' },
+            { ...makeJob('second', '2027-02-01'), title: 'Clinical Research Scientist' },
+            { ...makeJob('third', '2027-03-01'), title: 'Frontend Platform Engineer' },
+        ];
+
+        expect(filterJobsByTitle(jobs, '  engineer  ').map((job) => job.slug)).toEqual([
+            'first',
+            'third',
+        ]);
+    });
+
+    it('matches titles case-insensitively', () => {
+        const jobs = [{ ...makeJob('scientist', '2027-01-01'), title: 'Clinical Research Scientist' }];
+
+        expect(filterJobsByTitle(jobs, 'SCIENTIST')).toEqual(jobs);
+    });
+
+    it('returns no jobs when the query does not match', () => {
+        const jobs = [{ ...makeJob('engineer', '2027-01-01'), title: 'Data Platform Engineer' }];
+
+        expect(filterJobsByTitle(jobs, 'marketing')).toEqual([]);
+    });
+
+    it('returns all jobs for empty and whitespace-only queries', () => {
+        const jobs = [makeJob('first', '2027-01-01'), makeJob('second', '2027-02-01')];
+
+        expect(filterJobsByTitle(jobs, '')).toEqual(jobs);
+        expect(filterJobsByTitle(jobs, '   ')).toEqual(jobs);
+    });
+
+    it('does not mutate the input array', () => {
+        const jobs = [
+            { ...makeJob('first', '2027-01-01'), title: 'Senior Frontend Engineer' },
+            { ...makeJob('second', '2027-02-01'), title: 'Financial Analyst' },
+        ];
+        const originalJobs = [...jobs];
+
+        filterJobsByTitle(jobs, 'frontend');
+
+        expect(jobs).toEqual(originalJobs);
     });
 });
 
