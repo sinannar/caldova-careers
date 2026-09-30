@@ -1,7 +1,5 @@
 # Caldova Careers
 
-template: https://github.com/github-samples/caldova-careers 
-slides: https://danielscottraynsford.com/plagueho.learn/hypervelocity-engineering/#/1
 
 The careers site for **Caldova**, an AI-native pharmaceutical company. Browse open roles and submit an application with your name and email — no account required.
 
@@ -80,3 +78,7 @@ To report a security vulnerability, please follow the process in [SECURITY.md](S
 ## License
 
 Licensed under the [MIT License](LICENSE).
+
+## Ref
+- template: https://github.com/github-samples/caldova-careers 
+- slides: https://danielscottraynsford.com/plagueho.learn/hypervelocity-engineering/#/1
