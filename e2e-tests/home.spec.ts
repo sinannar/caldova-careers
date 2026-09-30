@@ -16,6 +16,15 @@ test.describe('Open roles listing', () => {
         const grid = page.getByTestId('roles-grid');
         await expect(grid).toBeVisible();
         await expect(page.getByTestId('role-card')).toHaveCount(expectedRoleCount);
+
+        const departmentNames = await page.getByTestId('role-department').allTextContents();
+        const expectedDepartmentCount = new Set(departmentNames.map((name) => name.trim())).size;
+
+        await expect(page.getByTestId('careers-summary')).toBeVisible();
+        await expect(page.getByTestId('summary-total-roles')).toHaveText(String(expectedRoleCount));
+        await expect(page.getByTestId('summary-departments-hiring')).toHaveText(
+            String(expectedDepartmentCount),
+        );
     });
 
     test('filters roles by title without navigation and restores the listing', async ({ page }) => {
@@ -25,6 +34,10 @@ test.describe('Open roles listing', () => {
         const roleCards = page.getByTestId('role-card');
         const roleTitles = page.getByTestId('role-title');
         const originalTitles = await roleTitles.allTextContents();
+        const totalRoles = page.getByTestId('summary-total-roles');
+        const departmentsHiring = page.getByTestId('summary-departments-hiring');
+        const originalTotalRoles = await totalRoles.textContent();
+        const originalDepartmentsHiring = await departmentsHiring.textContent();
         const initialUrl = page.url();
         let navigationCount = 0;
 
@@ -43,6 +56,8 @@ test.describe('Open roles listing', () => {
                 .withTags(['wcag2a', 'wcag2aa'])
                 .analyze();
             expect(filteredResults.violations).toEqual([]);
+            await expect(totalRoles).toHaveText(originalTotalRoles!.trim());
+            await expect(departmentsHiring).toHaveText(originalDepartmentsHiring!.trim());
             await expect(page).toHaveURL(initialUrl);
             expect(navigationCount).toBe(0);
         });
@@ -59,6 +74,8 @@ test.describe('Open roles listing', () => {
                 .withTags(['wcag2a', 'wcag2aa'])
                 .analyze();
             expect(noMatchResults.violations).toEqual([]);
+            await expect(totalRoles).toHaveText(originalTotalRoles!.trim());
+            await expect(departmentsHiring).toHaveText(originalDepartmentsHiring!.trim());
             await expect(page).toHaveURL(initialUrl);
             expect(navigationCount).toBe(0);
         });
@@ -72,6 +89,20 @@ test.describe('Open roles listing', () => {
             await expect(page).toHaveURL(initialUrl);
             expect(navigationCount).toBe(0);
         });
+    });
+
+    test('keeps the careers summary visible without horizontal overflow on a narrow screen', async ({ page }) => {
+        await page.setViewportSize({ width: 375, height: 812 });
+        await page.goto('/');
+
+        await expect(page.getByTestId('careers-summary')).toBeVisible();
+        await expect(page.getByTestId('summary-total-roles')).toBeVisible();
+        await expect(page.getByTestId('summary-departments-hiring')).toBeVisible();
+
+        const hasHorizontalOverflow = await page.evaluate(
+            () => document.documentElement.scrollWidth > window.innerWidth,
+        );
+        expect(hasHorizontalOverflow).toBe(false);
     });
 
     test('links through to a role detail page', async ({ page }) => {

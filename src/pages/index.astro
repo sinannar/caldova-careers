@@ -3,7 +3,7 @@ import { getCollection } from 'astro:content';
 import Layout from '../layouts/Layout.astro';
 import RoleCard from '../components/RoleCard.astro';
 import EmptyState from '../components/EmptyState.astro';
-import { sortByNewest } from '../lib/jobs';
+import { getCareersSummary, sortByNewest } from '../lib/jobs';
 import type { Job } from '../types/job';
 
 export const prerender = true;
@@ -12,6 +12,7 @@ const entries = await getCollection('jobs');
 const jobs: Job[] = sortByNewest(
     entries.map((entry) => ({ slug: entry.id, ...entry.data })),
 );
+const careersSummary = getCareersSummary(jobs);
 const serializedJobs = JSON.stringify(jobs)
   .replace(/</g, '\\u003C')
   .replace(/>/g, '\\u003E')
@@ -28,6 +29,31 @@ const serializedJobs = JSON.stringify(jobs)
         Caldova is an AI-native pharmaceutical company. Explore our open roles
         and help us bring better treatments to patients faster.
       </p>
+    </section>
+
+    <section
+      class="mb-10 border-y border-slate-700 py-5"
+      aria-labelledby="careers-summary-heading"
+      data-testid="careers-summary"
+    >
+      <h2 id="careers-summary-heading" class="sr-only">Careers summary</h2>
+      <dl class="grid grid-cols-1 gap-5 sm:grid-cols-2">
+        <div>
+          <dt class="text-sm font-medium text-slate-400">Open roles</dt>
+          <dd class="mt-1 text-3xl font-bold text-blue-400" data-testid="summary-total-roles">
+            {careersSummary.totalRoles}
+          </dd>
+        </div>
+        <div>
+          <dt class="text-sm font-medium text-slate-400">Departments hiring</dt>
+          <dd
+            class="mt-1 text-3xl font-bold text-blue-400"
+            data-testid="summary-departments-hiring"
+          >
+            {careersSummary.departmentsHiring}
+          </dd>
+        </div>
+      </dl>
     </section>
 
     <h2 class="text-2xl font-medium mb-6 text-slate-100">Open roles</h2>

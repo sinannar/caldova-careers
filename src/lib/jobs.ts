@@ -7,6 +7,19 @@
  */
 import type { Job } from '../types/job';
 
+export interface CareersSummary {
+    totalRoles: number;
+    departmentsHiring: number;
+}
+
+/** Return aggregate hiring counts for a collection of open roles. */
+export function getCareersSummary(jobs: Job[]): CareersSummary {
+    return {
+        totalRoles: jobs.length,
+        departmentsHiring: new Set(jobs.map((job) => job.department)).size,
+    };
+}
+
 /** Return jobs sorted by posted date, newest first (does not mutate input). */
 export function sortByNewest(jobs: Job[]): Job[] {
     return [...jobs].sort(
